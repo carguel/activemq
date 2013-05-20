@@ -29,11 +29,21 @@ directory node['activemq']['home'] do
 end
 
 unless File.exists?("#{activemq_home}/bin/activemq")
-  remote_file "#{tmp}/apache-activemq-#{version}-bin.tar.gz" do
-    source "#{mirror}/activemq/apache-activemq/#{version}/apache-activemq-#{version}-bin.tar.gz"
-    mode "0644"
+  archive_path = "#{tmp}/apache-activemq-#{version}-bin.tar.gz"
+  if m = mirror.match(%r{\Acookbook://(.+)\Z})
+    cookbook_name = m[1]
+    cookbook_file archive_path do
+      backup false
+      cookbook cookbook_name
+      source "activemq/apache-activemq-#{version}-bin.tar.gz"
+      mode "0644"
+    end
+  else
+    remote_file archive_path do
+      source "#{mirror}/activemq/apache-activemq/#{version}/apache-activemq-#{version}-bin.tar.gz"
+      mode "0644"
+    end
   end
-
   execute "tar zxf #{tmp}/apache-activemq-#{version}-bin.tar.gz" do
     cwd node['activemq']['home']
   end
