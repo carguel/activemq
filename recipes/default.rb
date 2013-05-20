@@ -78,8 +78,16 @@ link "/var/run/activemq.pid" do
   not_if "test -f /var/run/activemq.pid"
 end
 
+activemq_jar_name = case node['activemq']['version']
+                    when '5.8.0'
+                      "activemq.jar"
+                    else
+                      "run.jar"
+                    end
+
 template "#{activemq_home}/bin/linux/wrapper.conf" do
   source "wrapper.conf.erb"
   mode 0644
   notifies :restart, 'service[activemq]'
+  variables :jar_name => activemq_jar_name
 end
